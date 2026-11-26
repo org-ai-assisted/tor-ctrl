@@ -43,6 +43,7 @@ dry_run=""
 cmd_cli=""
 socket_found=""
 tor_control_socket=""
+tor_control_socket_filesystem=""
 tor_password=""
 wait_confirmation=""
 

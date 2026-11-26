@@ -12,16 +12,13 @@
 ##  - the control connection that originated the "ADD_ONION" command is closed.
 ## It is possible to override disabling the Onion Service on control connection close by specifying the "Detach" flag.
 
-## FIXME: Fix the automated shellcheck tests so that helper-scripts is
-## available when shellcheck is run. Do not add back a shellcheck override that
-## assumes helper-scripts is missing.
-
 set -o errexit
 set -o nounset
 set -o pipefail
 set -o errtrace
 shopt -s inherit_errexit
 shopt -s shift_verbose
+export LC_ALL=C
 
 # shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/strings.bsh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/strings.bsh
@@ -192,6 +189,7 @@ validate_onion(){
   printf "%s\n" "${onion_to_validate}"
 }
 
+# shellcheck disable=SC2317  # reached via 'trap "exit_handler" INT EXIT'
 exit_handler() {
   trap "" EXIT
   if ! test -d "${permanent_onion_save%*/}" ; then
