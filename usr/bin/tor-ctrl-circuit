@@ -4,16 +4,13 @@
 ## Copyright (C) 2013 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
 ## See the file COPYING for copying conditions.
 
-## FIXME: Fix the automated shellcheck tests so that helper-scripts is
-## available when shellcheck is run. Do not add back a shellcheck override that
-## assumes helper-scripts is missing.
-
 set -o errexit
 set -o nounset
 set -o pipefail
 set -o errtrace
 shopt -s inherit_errexit
 shopt -s shift_verbose
+export LC_ALL=C
 
 # shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/strings.bsh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/strings.bsh
@@ -37,9 +34,9 @@ source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/get_colors.sh
 ##
 ## This does not reimplement the palette: it still comes from get_colors.sh.
 ## It applies the same tty rule that file applies, to the correct descriptor.
-##
-## FIXME: Let's make get_colors.sh provide blank color variables if either
-## stdout OR stderr is redirected.
+## Not pushed into get_colors.sh: it gates on fd 2 for the many consumers that
+## write colours to STDERR; gating there on fd 1 too would strip their colours
+## whenever stdout is piped. The correct fd is caller-specific, so gate here.
 if [ ! -t 1 ]; then
    yellow=""
    nocolor=""
@@ -102,6 +99,7 @@ list_circuits(){
         relay_locale="$(tor-ctrl -c "GETINFO ip-to-country/${relay_host}" ${cli_args})"
         relay_locale="$(printf '%s\n' "${relay_locale}" | grep -F -- "250-ip-to-country/${relay_host}=" | sed "s/.*=//;s/\\r//")" || true
         #printf '%s. %s [%s, %s, (%s), %s]\n' "${hop}" "${relay_fingerprint}" "${relay_nickname}" "${relay_host}" "${relay_locale}" "${relay_bandwidth}"
+        ## style-ok: R-030 -- fixed-width columns for the relay hop table.
         printf '%1s. %-40s %-15s %-19s (%-2s) %9s\n' "${hop}" "${relay_fingerprint}" "${relay_host}" "${relay_nickname}" "${relay_locale}" "${relay_bandwidth}"
       done
       printf '%s\n' ""
